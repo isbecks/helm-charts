@@ -7,19 +7,11 @@
 # See templates/_helpers.tpl
 # nameOverride:
 # fullnameOverride:
-#Kubernetes:
-#  Namespace:
-#    Enabled: true
-    # Namespace name where this chart is to be deployed to
-#    Name: "ops"
-    # When true, namespaces are not deleted when the release is deleted.
-#    KeepNamespaces: true
 
 Master:
-#  Namespace: "ops"
   Name: jenkins-master
   Image: "jenkins/jenkins"
-  ImageTag: "lts"
+  ImageTag: "slim"
   ImagePullPolicy: "Always"
 # ImagePullSecret: jenkins
   Component: "jenkins-master"
@@ -80,12 +72,14 @@ Master:
   # Master Service annotations
   ServiceAnnotations: {}
   # Master Custom Labels
-  DeploymentLabels:
+  DeploymentLabels: {}
   #   foo: bar
   #   bar: foo
   # Master Service Labels
   ServiceLabels: {}
   #   service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+  # Put labels on jeknins-master pod
+  PodLabels: {}
   # Used to create Ingress record (should used with ServiceType: ClusterIP)
   # HostName: jenkins.cluster.local
   # NodePort: <to set explicitly, choose port between 30000-32767
@@ -97,6 +91,7 @@ Master:
   HealthProbeReadinessPeriodSeconds: 10
   HealthProbeLivenessFailureThreshold: 12
   SlaveListenerPort: 50000
+#  SlaveHostPort: 50000
   DisabledAgentProtocols:
     - JNLP-connect
     - JNLP2-connect
@@ -140,12 +135,11 @@ Master:
 
   # List of plugins to be install during Jenkins master start
   InstallPlugins:
-    - kubernetes:1.14.5
+    - kubernetes:1.14.0
     - workflow-job:2.31
     - workflow-aggregator:2.6
     - credentials-binding:1.17
-    - git:3.9.3
-    - sonar:2.8.1
+    - git:3.9.1
 
   # Enable to always override the installed plugins with the values of 'Master.InstallPlugins' on upgrade or redeployment.
   # OverwritePlugins: true
@@ -252,6 +246,7 @@ Master:
 
   Ingress:
     ApiVersion: extensions/v1beta1
+    Labels: {}
     Annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -262,6 +257,16 @@ Master:
     #   hosts:
     #     - jenkins.cluster.local
   AdditionalConfig: {}
+
+  # Master.HostAliases allows for adding entries to Pod /etc/hosts:
+  # https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+  HostAliases: []
+  # - ip: 192.168.50.50
+  #   hostnames:
+  #     - something.local
+  # - ip: 10.0.50.50
+  #   hostnames:
+  #     - other.local
 
 Agent:
   Enabled: false
@@ -299,6 +304,18 @@ Agent:
   # Key Value selectors. Ex:
   # jenkins-agent: v1
 
+  # Executed command when side container gets started
+  Command:
+  Args:
+  # Side container name
+  SideContainerName: jnlp
+  # Doesn't allocate pseudo TTY by default
+  TTYEnabled: false
+  # Max number of spawned agent
+  ContainerCap: 10
+  # Pod name
+  PodName: default
+
 Persistence:
   Enabled: true
   ## A manually managed Persistent Volume and Claim
@@ -312,7 +329,7 @@ Persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  StorageClass: managed-premium
+  # StorageClass: "-"
   Annotations: {}
   AccessMode: ReadWriteOnce
   Size: 8Gi

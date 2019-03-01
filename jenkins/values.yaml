@@ -91,7 +91,7 @@ Master:
   HealthProbeReadinessPeriodSeconds: 10
   HealthProbeLivenessFailureThreshold: 12
   SlaveListenerPort: 50000
-#  SlaveHostPort: 50000
+# SlaveHostPort: 50000
   DisabledAgentProtocols:
     - JNLP-connect
     - JNLP2-connect
@@ -329,7 +329,7 @@ Persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-   StorageClass: "-"
+# StorageClass: "-"
   Annotations: {}
   AccessMode: ReadWriteOnce
   Size: 8Gi

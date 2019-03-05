@@ -14,7 +14,7 @@ securityContext:
 
 service:
   name: sonarqube
-  type: LoadBalancer
+  type: NodePort
   externalPort: 9000
   internalPort: 9000
   labels:
